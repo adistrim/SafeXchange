@@ -1,0 +1,33 @@
+# Exclude Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[co]
+
+# Exclude virtual environment
+venv/
+.venv/
+
+# Exclude environment files
+*.env
+*.env.local
+
+# Exclude Docker and build-related files
+docker-compose.override.yml
+*.log
+*.pid
+
+# Exclude testing and coverage files
+.pytest_cache/
+htmlcov/
+coverage.xml
+*.cover
+
+# Exclude editor and system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+README.md
