@@ -109,7 +109,7 @@ def send_verification_email(email: str, token: str, username: str):
     We're excited to have you on board. To ensure the security of your account and enable all features, we need to verify your email address.
 
     Please click on the link below to verify your email:
-    http://{domain}/api/client/verify/{token}
+    http://{domain}/verify/{token}
 
     If you didn't create an account on SafeXchange, please ignore this email.
 
@@ -127,10 +127,10 @@ def send_verification_email(email: str, token: str, username: str):
         <p>We're excited to have you on board. To ensure the security of your account and enable all features, we need to verify your email address.</p>
         <p>Please click on the button below to verify your email:</p>
         <p>
-          <a href="http://{domain}/api/client/verify/{token}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+          <a href="http://{domain}/verify/{token}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
         </p>
         <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
-        <p>http://{domain}/api/client/verify/{token}</p>
+        <p>http://{domain}/verify/{token}</p>
         <p>If you didn't create an account on SafeXchange, please ignore this email.</p>
         <p>Thank you for choosing SafeXchange for your secure exchange needs.</p>
         <p>Best regards,<br>The SafeXchange Team</p>
