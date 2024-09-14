@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.models import Token, UserCreate, User, UserInDB
-from app.auth import authenticate_user, create_access_token, get_password_hash
+from app.models import UserCreate, User, UserInDB, Token, UserInfo
+from app.auth import authenticate_user, create_access_token, get_current_user, get_password_hash
 from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 from app.database import get_db
@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import os
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 load_dotenv()
@@ -24,6 +25,26 @@ async def login_ops_user(form_data: OAuth2PasswordRequestForm = Depends()):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username, "user_type": user.user_type}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/client/login", response_model=Token)
+async def login_client_user(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password, "client")
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is not verified",
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
@@ -56,7 +77,6 @@ async def signup_client_user(user: UserCreate):
     
     return User(**new_user.dict())
 
-
 @router.get("/client/verify/{token}")
 async def verify_email(token: str):
     db = get_db()
@@ -67,26 +87,25 @@ async def verify_email(token: str):
     db.users.update_one({"_id": user["_id"]}, {"$set": {"is_verified": True}, "$unset": {"verification_token": ""}})
     return {"message": "Email verified successfully"}
 
-@router.post("/client/login", response_model=Token)
-async def login_client_user(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password, "client")
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if not user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email not verified",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username, "user_type": user.user_type}, expires_delta=access_token_expires
+@router.get("/client/verify", response_model=UserInfo)
+async def verify_client_token(current_user: UserInDB = Depends(get_current_user)):
+    if current_user.user_type != "client":
+        raise HTTPException(status_code=403, detail="Not a client user")
+    return UserInfo(
+        username=current_user.username,
+        email=current_user.email,
+        user_type=current_user.user_type
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/ops/verify", response_model=UserInfo)
+async def verify_ops_token(current_user: UserInDB = Depends(get_current_user)):
+    if current_user.user_type != "ops":
+        raise HTTPException(status_code=403, detail="Not an ops user")
+    return UserInfo(
+        username=current_user.username,
+        email=current_user.email,
+        user_type=current_user.user_type
+    )
 
 def send_verification_email(email: str, token: str, username: str):
     smtp_server = os.getenv("SMTP_HOST")

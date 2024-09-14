@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from app.routers import auth
+from app.routers import auth, file_ops
 from app.database import init_db
 import os
 from dotenv import load_dotenv
@@ -26,3 +26,4 @@ async def startup_event():
     init_db()
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(file_ops.router, prefix="/api")
