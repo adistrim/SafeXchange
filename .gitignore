@@ -1,0 +1,69 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS resource forks are stored in Extended Attributes on files
+._*
+
+# Thumbnails
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.Spotlight-V100
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Windows image file caches
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Windows shortcut files
+*.lnk
+
+# Linux
+*~
+.*.swp
+.*.swo
+.cache
+.Trash-*
+.nfs*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Virtual environments
+venv/
+.env
+.venv/
+env/
+venv.bak/
+__pypackages__/
+
+# IDE Specific
+.vscode/
+.idea/
+*.iml
+
+# Docker
+docker-compose.override.yml
+
