@@ -1,5 +1,5 @@
+import ClientLoginPage from "@/components/ClientLoginPage";
+
 export default function Login() {
-    return <div>
-        Login
-    </div>
+    return <ClientLoginPage />
 }
