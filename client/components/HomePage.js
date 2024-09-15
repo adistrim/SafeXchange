@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { CircleChevronRight, Upload, Database, Server, Cloud, Package, WandSparkles, AppWindow } from 'lucide-react';
+import { CircleChevronRight, Upload, Database, Server, Cloud, Package, WandSparkles, AppWindow, GitBranch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
@@ -36,7 +36,7 @@ export default function HomePage() {
 
             <div className="text-center mb-12">
                 <h2 className="text-3xl font-semibold text-gray-800 mb-6">Our Tech Stack</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
                     {[
                         { name: 'Next.js', icon: <AppWindow className="h-8 w-8 mb-2" />, description: 'Frontend' },
                         { name: 'shadcn & Tailwind', icon: <WandSparkles className="h-8 w-8 mb-2" />, description: 'Design' },
@@ -44,6 +44,8 @@ export default function HomePage() {
                         { name: 'AWS S3', icon: <Database className="h-8 w-8 mb-2" />, description: 'Storage' },
                         { name: 'AWS CloudFront', icon: <Cloud className="h-8 w-8 mb-2" />, description: 'CDN' },
                         { name: 'Docker', icon: <Package className="h-8 w-8 mb-2" />, description: 'Containerization' },
+                        { name: 'MongoDB', icon: <Database className="h-8 w-8 mb-2" />, description: 'Database' },
+                        { name: 'Git & GitHub', icon: <GitBranch className="h-8 w-8 mb-2" />, description: 'Version Control' },
                     ].map((tech, index) => (
                         <div key={index} className="bg-white p-4 rounded-lg shadow-md">
                             <div className="flex justify-center">{tech.icon}</div>
