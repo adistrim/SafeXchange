@@ -41,11 +41,6 @@ async def login_client_user(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if not user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is not verified",
-        )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "user_type": user.user_type}, expires_delta=access_token_expires
@@ -94,7 +89,8 @@ async def verify_client_token(current_user: UserInDB = Depends(get_current_user)
     return UserInfo(
         username=current_user.username,
         email=current_user.email,
-        user_type=current_user.user_type
+        user_type=current_user.user_type,
+        is_verified=current_user.is_verified
     )
 
 @router.get("/ops/verify", response_model=UserInfo)

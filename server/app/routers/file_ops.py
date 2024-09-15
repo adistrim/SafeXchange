@@ -47,10 +47,7 @@ async def upload_file(file: UploadFile = File(...), current_user: UserInDB = Dep
         raise HTTPException(status_code=500, detail="Failed to upload file")
 
 @router.get("/files")
-async def list_files(current_user: UserInDB = Depends(get_current_user)):
-    if current_user.user_type != "ops":
-        raise HTTPException(status_code=403, detail="Only ops users can list files")
-
+async def list_files():
     try:
         response = s3.list_objects_v2(Bucket=BUCKET_NAME)
         files = [obj['Key'] for obj in response.get('Contents', [])]
@@ -61,8 +58,6 @@ async def list_files(current_user: UserInDB = Depends(get_current_user)):
 
 @router.get("/download-file/{filename}")
 async def get_download_url(filename: str, current_user: UserInDB = Depends(get_current_user)):
-    if current_user.user_type != "ops":
-        raise HTTPException(status_code=403, detail="Only ops users can download files")
 
     try:
         # Generate a unique token
@@ -94,7 +89,7 @@ async def secure_download(token: str, current_user: UserInDB = Depends(get_curre
 
     token_data = download_tokens[token]
 
-    if token_data["username"] != current_user.username or current_user.user_type != "ops":
+    if token_data["username"] != current_user.username:
         raise HTTPException(status_code=403, detail="Access denied")
 
     if datetime.utcnow() > token_data["expires_at"]:

@@ -28,3 +28,4 @@ class UserInfo(BaseModel):
     username: str
     email: str
     user_type: str
+    is_verified: bool
