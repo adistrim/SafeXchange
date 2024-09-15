@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
 
 export default function SignupPage() {
   const [username, setUsername] = useState('')
@@ -14,6 +15,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e) => {
@@ -42,17 +44,21 @@ export default function SignupPage() {
     }
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Card className="w-[350px]">
+    <div className="flex justify-center items-center min-h-screen bg-background">
+      <Card className="w-full max-w-md mx-auto mt-10">
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
           <CardDescription>Create your SafeXchange account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
-            <div className="grid w-full items-center gap-4">
-              <div className="flex flex-col space-y-1.5">
+            <div className="space-y-4">
+              <div>
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
@@ -62,7 +68,7 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              <div className="flex flex-col space-y-1.5">
+              <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -73,21 +79,35 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              <div className="flex flex-col space-y-1.5">
+              <div>
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 px-3 flex items-center"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
             </div>
-            <CardFooter className="flex justify-between mt-4">
-              <Button type="submit">Sign Up</Button>
-            </CardFooter>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <Button type="submit" className="w-full mt-4">
+              Sign Up
+            </Button>
           </form>
         </CardContent>
         {error && (
@@ -102,6 +122,14 @@ export default function SignupPage() {
             </AlertDescription>
           </Alert>
         )}
+        <CardFooter className="text-center">
+          <p>
+            Already have an account?{' '}
+            <a href="/login" className="text-blue-900 hover:underline">
+              Login as client
+            </a>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

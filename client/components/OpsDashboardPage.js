@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UploadCloud } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { UploadCloud, Download, Trash2, LogOut } from "lucide-react"
 
 export default function OpsDashboardPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [file, setFile] = useState(null)
     const [uploadStatus, setUploadStatus] = useState(null)
+    const [downloadStatus, setDownloadStatus] = useState(null)
+    const [deleteStatus, setDeleteStatus] = useState(null)
+    const [files, setFiles] = useState([])
     const router = useRouter()
 
     useEffect(() => {
@@ -32,11 +36,11 @@ export default function OpsDashboardPage() {
                 })
                 if (response.ok) {
                     setIsAuthenticated(true)
+                    fetchFiles()
                 } else {
                     router.push('/ops/login')
                 }
             } catch (error) {
-                console.error('Authentication error:', error)
                 router.push('/ops/login')
             } finally {
                 setIsLoading(false)
@@ -44,6 +48,24 @@ export default function OpsDashboardPage() {
         }
         verifyToken()
     }, [router])
+
+    const fetchFiles = async () => {
+        const token = localStorage.getItem('opsToken')
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL
+        try {
+            const response = await fetch(`${apiUrl}/api/files`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setFiles(data)
+            }
+        } catch (error) {
+            console.error('Error fetching files:', error)
+        }
+    }
 
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0]
@@ -81,17 +103,98 @@ export default function OpsDashboardPage() {
             })
 
             if (response.ok) {
-                const data = await response.json()
-                setUploadStatus({ type: 'success', message: `File uploaded successfully! URL: ${data.url}` })
+                setUploadStatus({ type: 'success', message: 'File uploaded successfully!' })
                 setFile(null)
+                fetchFiles()
             } else {
                 const errorData = await response.json()
                 setUploadStatus({ type: 'error', message: errorData.detail || 'Failed to upload file.' })
             }
         } catch (error) {
-            console.error('Upload error:', error)
             setUploadStatus({ type: 'error', message: 'An error occurred while uploading the file.' })
         }
+    }
+
+    const handleDownload = async (filename) => {
+        setDownloadStatus({ type: 'loading', message: 'Initiating download...' });
+        const token = localStorage.getItem('opsToken');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+        try {
+            // Get the secure download link
+            const linkResponse = await fetch(`${apiUrl}/api/download-file/${filename}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!linkResponse.ok) {
+                throw new Error('Failed to get download link');
+            }
+
+            const linkData = await linkResponse.json();
+
+            // Using the secure link to download the file
+            const fileResponse = await fetch(`${apiUrl}${linkData.download_link}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!fileResponse.ok) {
+                throw new Error('Failed to download file');
+            }
+
+            const blob = await fileResponse.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            setDownloadStatus({ type: 'success', message: 'File downloaded successfully!' });
+            setTimeout(() => setDownloadStatus(null), 3000);
+        } catch (error) {
+            setDownloadStatus({ type: 'error', message: `Error downloading file: ${error.message}` });
+        }
+    };
+
+    const handleDelete = async (filename) => {
+        setDeleteStatus({ type: 'loading', message: 'Deleting file...' });
+        const token = localStorage.getItem('opsToken');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+        try {
+            const response = await fetch(`${apiUrl}/api/delete-file/${filename}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete file');
+            }
+
+            const data = await response.json();
+            setDeleteStatus({ type: 'success', message: data.message });
+            fetchFiles();
+            setTimeout(() => setDeleteStatus(null), 3000);
+        } catch (error) {
+            setDeleteStatus({ type: 'error', message: `Error deleting file: ${error.message}` });
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('opsToken')
+        router.push('/ops/login')
     }
 
     if (isLoading) {
@@ -104,10 +207,17 @@ export default function OpsDashboardPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <Card className="w-full max-w-md mx-auto">
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Ops Dashboard</h1>
+                <Button onClick={handleLogout} variant="outline">
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                </Button>
+            </div>
+            
+            <Card className="w-full mb-4">
                 <CardHeader>
-                    <CardTitle>Ops Dashboard</CardTitle>
-                    <CardDescription>Upload files to AWS S3</CardDescription>
+                    <CardTitle>Upload File</CardTitle>
+                    <CardDescription>Upload files to secure storage</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -126,6 +236,51 @@ export default function OpsDashboardPage() {
                             </Alert>
                         )}
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Uploaded Files</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Filename</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {files.map((filename) => (
+                                <TableRow key={filename}>
+                                    <TableCell>{filename}</TableCell>
+                                    <TableCell>
+                                        <div className="space-x-2">
+                                            <Button onClick={() => handleDownload(filename)}>
+                                                <Download className="mr-2 h-4 w-4" /> Download
+                                            </Button>
+                                            <Button onClick={() => handleDelete(filename)} variant="destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    {downloadStatus && (
+                        <Alert className="mt-4" variant={downloadStatus.type === 'error' ? 'destructive' : 'default'}>
+                            <AlertTitle>{downloadStatus.type === 'error' ? 'Error' : 'Status'}</AlertTitle>
+                            <AlertDescription>{downloadStatus.message}</AlertDescription>
+                        </Alert>
+                    )}
+                    {deleteStatus && (
+                        <Alert className="mt-4" variant={deleteStatus.type === 'error' ? 'destructive' : 'default'}>
+                            <AlertTitle>{deleteStatus.type === 'error' ? 'Error' : 'Status'}</AlertTitle>
+                            <AlertDescription>{deleteStatus.message}</AlertDescription>
+                        </Alert>
+                    )}
                 </CardContent>
             </Card>
         </div>

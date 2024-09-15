@@ -35,7 +35,7 @@ export default function ClientLoginPage() {
       if (response.ok) {
         const data = await response.json()
         localStorage.setItem('opsToken', data.access_token)
-        router.push('/home')
+        router.push('/dashboard')
       } else {
         const errorData = await response.json()
         setError(errorData.detail || 'Login failed. Please check your credentials.')
@@ -51,55 +51,62 @@ export default function ClientLoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-background">
-      <Card className="w-[350px]">
+      <Card className="w-full max-w-md mx-auto mt-10">
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Log in to your SafeXchange account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
-            <div className="grid w-full items-center gap-4">
-              <div className="flex flex-col space-y-1.5">
+            <div className="space-y-4">
+              <div>
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  placeholder="Enter your username"
+                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
-              <div className="flex flex-col space-y-1.5">
+              <div>
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                   <button
                     type="button"
+                    className="absolute inset-y-0 right-0 px-3 flex items-center"
                     onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
                   >
-                    {showPassword ? <EyeOffIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
+                    {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
             </div>
-            <CardFooter className="flex justify-between mt-4">
-              <Button type="submit">Log In</Button>
-            </CardFooter>
+            <Button type="submit" className="w-full mt-4">
+              Log In
+            </Button>
           </form>
         </CardContent>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <CardFooter className="text-center">
+          <p>
+            Don&apos;t have an account?{' '}
+            <a href="/signup" className="text-blue-900 hover:underline">
+              Create account
+            </a>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )
