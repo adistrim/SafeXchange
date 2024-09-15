@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.models import UserCreate, User, UserInDB, Token, UserInfo
+from app.models import UserCreate, User, UserInDB, Token, UserInfo, OpsUserInfo
 from app.auth import authenticate_user, create_access_token, get_current_user, get_password_hash
 from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
@@ -93,14 +93,14 @@ async def verify_client_token(current_user: UserInDB = Depends(get_current_user)
         is_verified=current_user.is_verified
     )
 
-@router.get("/ops/verify", response_model=UserInfo)
+@router.get("/ops/verify", response_model=OpsUserInfo)
 async def verify_ops_token(current_user: UserInDB = Depends(get_current_user)):
     if current_user.user_type != "ops":
         raise HTTPException(status_code=403, detail="Not an ops user")
-    return UserInfo(
+    return OpsUserInfo(
         username=current_user.username,
         email=current_user.email,
-        user_type=current_user.user_type
+        user_type=current_user.user_type,
     )
 
 def send_verification_email(email: str, token: str, username: str):

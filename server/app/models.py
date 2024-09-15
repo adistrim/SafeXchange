@@ -29,3 +29,8 @@ class UserInfo(BaseModel):
     email: str
     user_type: str
     is_verified: bool
+
+class OpsUserInfo(BaseModel):
+    username: str
+    email: str
+    user_type: str
