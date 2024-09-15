@@ -34,7 +34,7 @@ export default function ClientLoginPage() {
 
       if (response.ok) {
         const data = await response.json()
-        localStorage.setItem('opsToken', data.access_token)
+        localStorage.setItem('clientToken', data.access_token)
         router.push('/dashboard')
       } else {
         const errorData = await response.json()
