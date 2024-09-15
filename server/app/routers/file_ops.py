@@ -84,34 +84,37 @@ async def get_download_url(filename: str, current_user: UserInDB = Depends(get_c
 
 @router.get("/secure-download/{token}")
 async def secure_download(token: str, current_user: UserInDB = Depends(get_current_user)):
-    if token not in download_tokens:
-        raise HTTPException(status_code=400, detail="Invalid or expired download token")
-
-    token_data = download_tokens[token]
-
-    if token_data["username"] != current_user.username:
-        raise HTTPException(status_code=403, detail="Access denied")
-
-    if datetime.utcnow() > token_data["expires_at"]:
-        del download_tokens[token]
-        raise HTTPException(status_code=400, detail="Download token has expired")
-
-    filename = token_data["filename"]
-
     try:
-        file_obj = s3.get_object(Bucket=BUCKET_NAME, Key=filename)
-        return StreamingResponse(
-            file_obj['Body'].iter_chunks(),
-            media_type='application/octet-stream',
-            headers={
-                'Content-Disposition': f'attachment; filename="{filename}"'
-            }
-        )
-    except ClientError as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Failed to download file")
-    finally:
-        del download_tokens[token]
+        if token not in download_tokens:
+            raise HTTPException(status_code=400, detail="Invalid or expired download token")
+
+        token_data = download_tokens[token]
+
+        if token_data["username"] != current_user.username:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+        if datetime.utcnow() > token_data["expires_at"]:
+            del download_tokens[token]
+            raise HTTPException(status_code=400, detail="Download token has expired")
+
+        filename = token_data["filename"]
+
+        try:
+            file_obj = s3.get_object(Bucket=BUCKET_NAME, Key=filename)
+            return StreamingResponse(
+                file_obj['Body'].iter_chunks(),
+                media_type='application/octet-stream',
+                headers={
+                    'Content-Disposition': f'attachment; filename="{filename}"'
+                }
+            )
+        except ClientError as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Failed to download file")
+        finally:
+            del download_tokens[token]
+    except Exception as e:
+        print(e)    
 
 @router.delete("/delete-file/{filename}")
 async def delete_file(filename: str, current_user: UserInDB = Depends(get_current_user)):
