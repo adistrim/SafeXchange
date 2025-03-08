@@ -1,0 +1,14 @@
+[package]
+name = "server-v2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web framework
+axum = { version = "0.8", features = ["tokio", "http1"] }
+
+# Async runtime
+tokio = { version = "1.29.1", features = ["full"] }
+
+# Configuration
+dotenv = "0.15.0"
