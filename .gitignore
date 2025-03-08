@@ -67,3 +67,40 @@ __pypackages__/
 # Docker
 docker-compose.override.yml
 
+# Rust
+/target/
+**/Cargo.lock
+/Cargo.lock
+**/*.rs.bk
+**/target/
+**/debug/
+**/release/
+**/incremental/
+**/dep/
+**/xtask/
+
+# Rust tools
+*.profdata
+*.profraw
+*.log
+*.cache/
+
+# Rustfmt & Clippy
+rustfmt.toml
+clippy.toml
+
+# Rust WASM
+pkg/
+wasm-pack.log
+*.wasm
+
+# S3/MinIO Storage
+s3_uploads/
+storage_temp/
+
+# Secrets & Config
+.env
+.env.local
+.envrc
+secrets.toml
+config.json
